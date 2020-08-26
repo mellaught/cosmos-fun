@@ -4,15 +4,16 @@ import (
 	"encoding/json"
 	"io"
 
-	"github.com/cosmos/cosmos-sdk/server"
-	"github.com/cosmos/cosmos-sdk/x/staking"
-
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"
+	"github.com/cosmos/cosmos-sdk/server"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
+	"github.com/cosmos/cosmos-sdk/x/staking"
+	typessdk "github.com/cosmos/cosmos-sdk/x/genutil/types"
+	
 	app "github.com/cosmos/sdk-tutorials/nameservice"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -51,6 +52,8 @@ func main() {
 			auth.GenesisAccountIterator{}, app.DefaultNodeHome, app.DefaultCLIHome,
 		),
 	)
+	
+	rootCmd.AddCommand(testnetCmd(ctx, cdc, app.ModuleBasics, typessdk.StakingKeeper{}))
 	rootCmd.AddCommand(genutilcli.ValidateGenesisCmd(ctx, cdc, app.ModuleBasics))
 
 	// AddGenesisAccountCmd allows users to add accounts to the genesis file
