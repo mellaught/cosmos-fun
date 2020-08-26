@@ -44,7 +44,7 @@ var (
 
 // get cmd to initialize all files for tendermint testnet and application
 func testnetCmd(ctx *server.Context, cdc *codec.Codec,
-	mbm module.BasicManager, genAccIterator genutil.GenesisState,
+	mbm module.BasicManager, genAccIterator typessdk.GenesisAccountsIterator,
 ) *cobra.Command {
 
 	cmd := &cobra.Command{
@@ -102,7 +102,7 @@ const nodeDirPerm = 0755
 
 // Initialize the testnet
 func InitTestnet(cmd *cobra.Command, config *tmconfig.Config, cdc *codec.Codec,
-	mbm module.BasicManager, genAccIterator genutil.GenesisState,
+	mbm module.BasicManager, genAccIterator typessdk.GenesisAccountsIterator,
 	outputDir, chainID, minGasPrices, nodeDirPrefix, nodeDaemonHome,
 	nodeCLIHome, startingIPAddress string, numValidators int, isLocal bool) error {
 
@@ -261,7 +261,8 @@ func initGenFiles(cdc *codec.Codec, mbm module.BasicManager, chainID string,
 	appGenState := mbm.DefaultGenesis()
 
 	// set the accounts in the genesis state
-	appGenState = typessdk.SetGenesisStateInAppState(cdc, appGenState, accs)
+	genesisStateBz := cdc.MustMarshalJSON(accs)
+	appGenState["genutil"] = genesisStateBz
 
 	appGenStateJSON, err := codec.MarshalJSONIndent(cdc, appGenState)
 	if err != nil {
@@ -287,7 +288,7 @@ func collectGenFiles(
 	cdc *codec.Codec, config *tmconfig.Config, chainID string,
 	monikers, nodeIDs []string, valPubKeys []crypto.PubKey,
 	numValidators int, outputDir, nodeDirPrefix, nodeDaemonHome string,
-	genAccIterator genutil.GenesisAccountsIterator) error {
+	genAccIterator typessdk.GenesisAccountsIterator) error {
 
 	var appState json.RawMessage
 	genesisTime := "2020-01-01T10:16:17.025816Z"
