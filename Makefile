@@ -15,9 +15,9 @@ include Makefile.ledger
 all: install
 
 install: go.sum
-		@echo "--> Installing nsd & nscli"
-		@go install -mod=readonly $(BUILD_FLAGS) ./cmd/nsd
-		@go install -mod=readonly $(BUILD_FLAGS) ./cmd/nscli
+		@echo "--> Installing onlifed & onlifecli"
+		@go install $(BUILD_FLAGS) ./cmd/onlifed
+		@go install $(BUILD_FLAGS) ./cmd/onlifecli
 
 go.sum: go.mod
 		@echo "--> Ensure dependencies have not been modified"
