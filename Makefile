@@ -15,9 +15,9 @@ include Makefile.ledger
 all: install
 
 install: go.sum
-		@echo "--> Installing onlifed & onlifecli"
-		@go install $(BUILD_FLAGS) ./cmd/onlifed
-		@go install $(BUILD_FLAGS) ./cmd/onlifecli
+		@echo "--> Installing eond & eoncli"
+		@go install $(BUILD_FLAGS) ./cmd/eond
+		@go install $(BUILD_FLAGS) ./cmd/eoncli
 
 go.sum: go.mod
 		@echo "--> Ensure dependencies have not been modified"

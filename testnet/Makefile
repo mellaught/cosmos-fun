@@ -8,8 +8,8 @@ bucket=github.com
 
 VERSION := $(shell echo $(shell git describe --tags) | sed 's/^v//')
 NAME=eon
-SERVER=onlifed
-CLIENT=onlifecli
+SERVER=eond
+CLIENT=eoncli
 CosmosSDK=v0.39.1
 TENDERMINT=v0.33.8
 # Iavl=v0.12.4
@@ -50,12 +50,12 @@ all: install
 install: eon
 
 eon:
-	go install -v $(BUILD_FLAGS) -tags "$(BUILD_TAGS)" ../cmd/onlifed
-	go install -v $(BUILD_FLAGS) -tags "$(BUILD_TAGS)" ../cmd/onlifecli
+	go install -v $(BUILD_FLAGS) -tags "$(BUILD_TAGS)" ../cmd/eond
+	go install -v $(BUILD_FLAGS) -tags "$(BUILD_TAGS)" ../cmd/eoncli
 
 testnet:
-	go install -v $(BUILD_TESTNET_FLAGS) -tags "$(BUILD_TAGS)" ../cmd/onlifed
-	go install -v $(BUILD_TESTNET_FLAGS) -tags "$(BUILD_TAGS)" ../cmd/onlifecli
+	go install -v $(BUILD_TESTNET_FLAGS) -tags "$(BUILD_TAGS)" ../cmd/eond
+	go install -v $(BUILD_TESTNET_FLAGS) -tags "$(BUILD_TAGS)" ../cmd/eoncli
 
 # test-unit:
 # 	@VERSION=$(VERSION) go test -mod=readonly -tags='ledger test_ledger_mock' ./app/...
@@ -93,21 +93,21 @@ go.sum: go.mod
 	@go mod tidy
 
 cli:
-	go install -v $(BUILD_FLAGS) -tags "$(BUILD_TAGS)" ./cmd/onlifecli
+	go install -v $(BUILD_FLAGS) -tags "$(BUILD_TAGS)" ./cmd/eoncli
 
 server:
-	go install -v $(BUILD_FLAGS) -tags "$(BUILD_TAGS)" ./cmd/onlifed
+	go install -v $(BUILD_FLAGS) -tags "$(BUILD_TAGS)" ./cmd/eond
 
 format:
 	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/lcd/statik/statik.go" | xargs gofmt -w -s
 
 build:
 ifeq ($(OS),Windows_NT)
-	go build $(BUILD_FLAGS) -o build/onlifed.exe ./cmd/onlifed
-	go build $(BUILD_FLAGS) -o build/onlifecli.exe ./cmd/onlifecli
+	go build $(BUILD_FLAGS) -o build/eond.exe ./cmd/eond
+	go build $(BUILD_FLAGS) -o build/eoncli.exe ./cmd/eoncli
 else
-	go build $(BUILD_FLAGS) -o build/onlifed ./cmd/onlifed
-	go build $(BUILD_FLAGS) -o build/onlifecli ./cmd/onlifecli
+	go build $(BUILD_FLAGS) -o build/eond ./cmd/eond
+	go build $(BUILD_FLAGS) -o build/eoncli ./cmd/eoncli
 endif
 
 build-linux:
@@ -118,7 +118,7 @@ build-docker-onlifenode:
 
 # Run a 4-node testnet locally
 localnet-start: build-linux localnet-stop
-	@if ! [ -f build/node0/onlifed/config/genesis.json ]; then docker run --rm -v $(CURDIR)/build:/onlifed:Z okchain/node testnet --v 4 -o . --starting-ip-address 192.168.10.2 ; fi
+	@if ! [ -f build/node0/eond/config/genesis.json ]; then docker run --rm -v $(CURDIR)/build:/eond:Z okchain/node testnet --v 4 -o . --starting-ip-address 192.168.10.2 ; fi
 	docker-compose up -d
 
 # Stop testnet

@@ -28,14 +28,14 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/supply"
 )
 
-const appName = "nameservice"
+const appName = "eon"
 
 var (
 	// default home directories for the application CLI
-	DefaultCLIHome = os.ExpandEnv("$HOME/.nscli")
+	DefaultCLIHome = os.ExpandEnv("$HOME/.eoncli")
 
 	// DefaultNodeHome sets the folder where the applcation data and configuration will be stored
-	DefaultNodeHome = os.ExpandEnv("$HOME/.nsd")
+	DefaultNodeHome = os.ExpandEnv("$HOME/.eond")
 
 	// NewBasicManager is in charge of setting up basic module elements
 	ModuleBasics = module.NewBasicManager(
@@ -72,8 +72,8 @@ func MakeCodec() *codec.Codec {
 	return cdc.Seal()
 }
 
-// nameServiceApp extended ABCI application
-type nameServiceApp struct {
+// EONApp extended ABCI application
+type EONApp struct {
 	*bam.BaseApp
 	cdc *codec.Codec
 
@@ -106,10 +106,10 @@ type nameServiceApp struct {
 // verify app interface at compile time
 var _ simapp.App = (nil)
 
-/// NewNameServiceApp is a constructor function for nameServiceApp
-func NewNameServiceApp(
+/// NewEONApp is a constructor function for EONApp
+func NewEONApp(
 	logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseApp),
-) *nameServiceApp {
+) *EONApp {
 
 	// First define the top level codec that will be shared by the different modules
 	cdc := MakeCodec()
@@ -125,7 +125,7 @@ func NewNameServiceApp(
 	tkeys := sdk.NewTransientStoreKeys(params.TStoreKey)
 
 	// Here you initialize your application with the store keys it requires
-	var app = &nameServiceApp{
+	var app = &EONApp{
 		BaseApp:   bApp,
 		cdc:       cdc,
 		keys:      keys,
@@ -269,7 +269,7 @@ func NewDefaultGenesisState() GenesisState {
 	return ModuleBasics.DefaultGenesis()
 }
 
-func (app *nameServiceApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
+func (app *EONApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
 	var genesisState GenesisState
 
 	err := app.cdc.UnmarshalJSON(req.AppStateBytes, &genesisState)
@@ -280,40 +280,40 @@ func (app *nameServiceApp) InitChainer(ctx sdk.Context, req abci.RequestInitChai
 	return app.mm.InitGenesis(ctx, genesisState)
 }
 
-func (app *nameServiceApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
+func (app *EONApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
 	return app.mm.BeginBlock(ctx, req)
 }
 
-func (app *nameServiceApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
+func (app *EONApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
 	return app.mm.EndBlock(ctx, req)
 }
 
 // GetKey returns the KVStoreKey for the provided store key
-func (app *nameServiceApp) GetKey(storeKey string) *sdk.KVStoreKey {
+func (app *EONApp) GetKey(storeKey string) *sdk.KVStoreKey {
 	return app.keys[storeKey]
 }
 
 // GetTKey returns the TransientStoreKey for the provided store key
-func (app *nameServiceApp) GetTKey(storeKey string) *sdk.TransientStoreKey {
+func (app *EONApp) GetTKey(storeKey string) *sdk.TransientStoreKey {
 	return app.tKeys[storeKey]
 }
 
-func (app *nameServiceApp) LoadHeight(height int64) error {
+func (app *EONApp) LoadHeight(height int64) error {
 	return app.LoadVersion(height, app.keys[bam.MainStoreKey])
 }
 
 // Codec returns simapp's codec
-func (app *nameServiceApp) Codec() *codec.Codec {
+func (app *EONApp) Codec() *codec.Codec {
 	return app.cdc
 }
 
 // SimulationManager implements the SimulationApp interface
-func (app *nameServiceApp) SimulationManager() *module.SimulationManager {
+func (app *EONApp) SimulationManager() *module.SimulationManager {
 	return app.sm
 }
 
 // ModuleAccountAddrs returns all the app's module account addresses.
-func (app *nameServiceApp) ModuleAccountAddrs() map[string]bool {
+func (app *EONApp) ModuleAccountAddrs() map[string]bool {
 	modAccAddrs := make(map[string]bool)
 	for acc := range maccPerms {
 		modAccAddrs[supply.NewModuleAddress(acc).String()] = true
@@ -324,7 +324,7 @@ func (app *nameServiceApp) ModuleAccountAddrs() map[string]bool {
 
 //_________________________________________________________
 
-func (app *nameServiceApp) ExportAppStateAndValidators(forZeroHeight bool, jailWhiteList []string,
+func (app *EONApp) ExportAppStateAndValidators(forZeroHeight bool, jailWhiteList []string,
 ) (appState json.RawMessage, validators []tmtypes.GenesisValidator, err error) {
 
 	// as if they could withdraw from the start of the next block

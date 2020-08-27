@@ -36,8 +36,8 @@ func main() {
 	config.Seal()
 
 	rootCmd := &cobra.Command{
-		Use:   "nscli",
-		Short: "nameservice Client",
+		Use:   "oencli",
+		Short: "Onlife Enterprise Network Client",
 	}
 
 	// Add --chain-id to persistent flags and mark it required
@@ -61,7 +61,7 @@ func main() {
 		flags.NewCompletionCmd(rootCmd, true),
 	)
 
-	executor := cli.PrepareMainCmd(rootCmd, "NS", app.DefaultCLIHome)
+	executor := cli.PrepareMainCmd(rootCmd, "EON", app.DefaultCLIHome)
 	err := executor.Execute()
 
 	if err != nil {

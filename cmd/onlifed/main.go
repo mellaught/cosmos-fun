@@ -37,7 +37,7 @@ func main() {
 	ctx := server.NewDefaultContext()
 
 	rootCmd := &cobra.Command{
-		Use:               "onlifed",
+		Use:               "eond",
 		Short:             "onlife App Daemon (server)",
 		PersistentPreRunE: server.PersistentPreRunEFn(ctx),
 	}
@@ -62,7 +62,7 @@ func main() {
 	server.AddCommands(ctx, cdc, rootCmd, newApp, exportAppStateAndTMValidators)
 
 	// prepare and add flags
-	executor := cli.PrepareBaseCmd(rootCmd, "ONLIFE", app.DefaultNodeHome)
+	executor := cli.PrepareBaseCmd(rootCmd, "EON", app.DefaultNodeHome)
 	err := executor.Execute()
 	if err != nil {
 		panic(err)
@@ -70,7 +70,7 @@ func main() {
 }
 
 func newApp(logger log.Logger, db dbm.DB, traceStore io.Writer) abci.Application {
-	return app.NewNameServiceApp(logger, db, baseapp.SetMinGasPrices(viper.GetString(server.FlagMinGasPrices)))
+	return app.NewEONApp(logger, db, baseapp.SetMinGasPrices(viper.GetString(server.FlagMinGasPrices)))
 }
 
 func exportAppStateAndTMValidators(
@@ -78,17 +78,17 @@ func exportAppStateAndTMValidators(
 ) (json.RawMessage, []tmtypes.GenesisValidator, error) {
 
 	if height != -1 {
-		nsApp := app.NewNameServiceApp(logger, db)
-		err := nsApp.LoadHeight(height)
+		eonApp := app.NewEONApp(logger, db)
+		err := eonApp.LoadHeight(height)
 		if err != nil {
 			return nil, nil, err
 		}
-		return nsApp.ExportAppStateAndValidators(forZeroHeight, jailWhiteList)
+		return eonApp.ExportAppStateAndValidators(forZeroHeight, jailWhiteList)
 	}
 
-	nsApp := app.NewNameServiceApp(logger, db)
+	eonApp := app.NewEONApp(logger, db)
 
-	return nsApp.ExportAppStateAndValidators(forZeroHeight, jailWhiteList)
+	return eonApp.ExportAppStateAndValidators(forZeroHeight, jailWhiteList)
 }
 
 // // AddGenesisAccountCmd allows users to add accounts to the genesis file

@@ -49,14 +49,14 @@ func testnetCmd(ctx *server.Context, cdc *codec.Codec,
 
 	cmd := &cobra.Command{
 		Use:   "testnet",
-		Short: "Initialize files for a Onlife testnet",
+		Short: "Initialize files for a EON testnet",
 		Long: `testnet will create "v" number of directories and populate each with
 necessary files (private validator, genesis, config, etc.).
 
 Note, strict routability for addresses is turned off in the config file.
 
 Example:
-	onlifed testnet --v 4 --output-dir ./output --starting-ip-address 192.168.10.2 -l
+	eond testnet --v 4 --output-dir ./output --starting-ip-address 192.168.10.2 -l
 	`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			config := ctx.Config
@@ -82,9 +82,9 @@ Example:
 		"Directory to store initialization data for the testnet")
 	cmd.Flags().String(flagNodeDirPrefix, "node",
 		"Prefix the directory name for each node with (node results in node0, node1, ...)")
-	cmd.Flags().String(flagNodeDaemonHome, "onlifed",
+	cmd.Flags().String(flagNodeDaemonHome, "eond",
 		"Home directory of the node's daemon configuration")
-	cmd.Flags().String(flagNodeCLIHome, "onlifecli",
+	cmd.Flags().String(flagNodeCLIHome, "eoncli",
 		"Home directory of the node's cli configuration")
 	cmd.Flags().String(flagStartingIPAddress, "192.168.0.1",
 		"Starting IP address (192.168.0.1 results in persistent peers list ID0@192.168.0.1:46656, ID1@192.168.0.2:46656, ...)")
@@ -235,7 +235,7 @@ func InitTestnet(cmd *cobra.Command, config *tmconfig.Config, cdc *codec.Codec,
 			return err
 		}
 
-		onlifeConfigFilePath := filepath.Join(nodeDir, "config/onlifed.toml")
+		onlifeConfigFilePath := filepath.Join(nodeDir, "config/eond.toml")
 		srvconfig.WriteConfigFile(onlifeConfigFilePath, onlifeConfig)
 	}
 

@@ -9,9 +9,9 @@ services:
     environment:
       - ID=0
       - TYPE=onlife
-      - LOG=${LOG:-onlifed.log}
+      - LOG=${LOG:-eond.log}
     volumes:
-      - ./build:/onlifed:Z
+      - ./build:/eond:Z
     networks:
       localnet:
         ipv4_address: 192.168.10.2
@@ -24,9 +24,9 @@ services:
     environment:
       - ID=1
       - TYPE=onlife
-      - LOG=${LOG:-onlifed.log}
+      - LOG=${LOG:-eond.log}
     volumes:
-      - ./build:/onlifed:Z
+      - ./build:/eond:Z
     networks:
       localnet:
         ipv4_address: 192.168.10.3
@@ -37,11 +37,11 @@ services:
     environment:
       - ID=2
       - TYPE=onlife
-      - LOG=${LOG:-onlifed.log}
+      - LOG=${LOG:-eond.log}
     ports:
       - "26661-26662:26656-26657"
     volumes:
-      - ./build:/onlifed:Z
+      - ./build:/eond:Z
     networks:
       localnet:
         ipv4_address: 192.168.10.4
@@ -52,11 +52,11 @@ services:
     environment:
       - ID=3
       - TYPE=onlife
-      - LOG=${LOG:-onlifed.log}
+      - LOG=${LOG:-eond.log}
     ports:
       - "26663-26664:26656-26657"
     volumes:
-      - ./build:/onlifed:Z
+      - ./build:/eond:Z
     networks:
       localnet:
         ipv4_address: 192.168.10.5
@@ -68,11 +68,11 @@ services:
     environment:
       - ID=0
       - TYPE=validator
-      - LOG=${LOG:-onlifed.log}
+      - LOG=${LOG:-eond.log}
     ports:
       - "26665-26666:26656-26657"
     volumes:
-      - ./build:/onlifed:Z
+      - ./build:/eond:Z
     networks:
       localnet:
         ipv4_address: 192.168.10.6
@@ -84,11 +84,11 @@ services:
     environment:
       - ID=1
       - TYPE=validator
-      - LOG=${LOG:-onlifed.log}
+      - LOG=${LOG:-eond.log}
     ports:
       - "26667-26668:26656-26657"
     volumes:
-      - ./build:/onlifed:Z
+      - ./build:/eond:Z
     networks:
       localnet:
         ipv4_address: 192.168.10.7
