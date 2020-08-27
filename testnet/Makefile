@@ -4,15 +4,16 @@ SUM := $(shell which shasum)
 COMMIT := $(shell git rev-parse HEAD)
 CAT := $(if $(filter $(OS),Windows_NT),type,cat)
 
-GithubTop=github.com
+bucket=github.com
 
-Version=v0.11.0
-CosmosSDK=v0.37.9
-Tendermint=v0.32.10
-Iavl=v0.12.4
-Name=okchain
-ServerName=okchaind
-ClientName=okchaincli
+VERSION := $(shell echo $(shell git describe --tags) | sed 's/^v//')
+NAME=eon
+SERVER=onlifed
+CLIENT=onlifecli
+CosmosSDK=v0.39.1
+TENDERMINT=v0.33.8
+# Iavl=v0.12.4
+
 # the height of the 1st block is GenesisHeight+1
 GenesisHeight=0
 
@@ -30,15 +31,15 @@ build_tags += $(BUILD_TAGS)
 build_tags := $(strip $(build_tags))
 
 
-ldflags = -X $(GithubTop)/cosmos/cosmos-sdk/version.Version=$(Version) \
-	-X $(GithubTop)/cosmos/cosmos-sdk/version.Name=$(Name) \
-  -X $(GithubTop)/cosmos/cosmos-sdk/version.ServerName=$(ServerName) \
-  -X $(GithubTop)/cosmos/cosmos-sdk/version.ClientName=$(ClientName) \
-  -X $(GithubTop)/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
-  -X $(GithubTop)/cosmos/cosmos-sdk/version.CosmosSDK=$(CosmosSDK) \
-  -X $(GithubTop)/cosmos/cosmos-sdk/version.Tendermint=$(Tendermint) \
-  -X $(GithubTop)/cosmos/cosmos-sdk/version.BuildTags=$(build_tags) \
-  -X $(GithubTop)/tendermint/tendermint/types.startBlockHeightStr=$(GenesisHeight) \
+ldflags = -X $(bucket)/cosmos/cosmos-sdk/version.Version=$(VERSION) \
+	-X $(bucket)/cosmos/cosmos-sdk/version.Name=$(Name) \
+  -X $(bucket)/cosmos/cosmos-sdk/version.ServerName=$(SERVER) \
+  -X $(bucket)/cosmos/cosmos-sdk/version.ClientName=$(CLIENT) \
+  -X $(bucket)/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
+  -X $(bucket)/cosmos/cosmos-sdk/version.CosmosSDK=$(CosmosSDK) \
+  -X $(bucket)/cosmos/cosmos-sdk/version.Tendermint=$(TENDERMINT) \
+  -X $(bucket)/cosmos/cosmos-sdk/version.BuildTags=$(build_tags) \
+  -X $(bucket)/tendermint/tendermint/types.startBlockHeightStr=$(GenesisHeight) \
 
 
 ldflags += $(LDFLAGS)
@@ -49,30 +50,30 @@ BUILD_TESTNET_FLAGS := $(BUILD_FLAGS)
 
 all: install
 
-install: okchain
+install: eon
 
-okchain:
-	go install -v $(BUILD_FLAGS) -tags "$(BUILD_TAGS)" ./cmd/okchaind
-	go install -v $(BUILD_FLAGS) -tags "$(BUILD_TAGS)" ./cmd/okchaincli
+eon:
+	go install -v $(BUILD_FLAGS) -tags "$(BUILD_TAGS)" ./cmd/onlifed
+	go install -v $(BUILD_FLAGS) -tags "$(BUILD_TAGS)" ./cmd/onlifecli
 
 testnet:
-	go install -v $(BUILD_TESTNET_FLAGS) -tags "$(BUILD_TAGS)" ./cmd/okchaind
-	go install -v $(BUILD_TESTNET_FLAGS) -tags "$(BUILD_TAGS)" ./cmd/okchaincli
+	go install -v $(BUILD_TESTNET_FLAGS) -tags "$(BUILD_TAGS)" ./cmd/onlifed
+	go install -v $(BUILD_TESTNET_FLAGS) -tags "$(BUILD_TAGS)" ./cmd/onlifecli
 
-test-unit:
-	@VERSION=$(VERSION) go test -mod=readonly -tags='ledger test_ledger_mock' ./app/...
-	@VERSION=$(VERSION) go test -mod=readonly -tags='ledger test_ledger_mock' ./x/backend/...
-	@VERSION=$(VERSION) go test -mod=readonly -tags='ledger test_ledger_mock' ./x/common/...
-	@VERSION=$(VERSION) go test -mod=readonly -tags='ledger test_ledger_mock' ./x/dex/...
-	@VERSION=$(VERSION) go test -mod=readonly -tags='ledger test_ledger_mock' ./x/distribution/...
-	@VERSION=$(VERSION) go test -mod=readonly -tags='ledger test_ledger_mock' ./x/genutil/...
-	@VERSION=$(VERSION) go test -mod=readonly -tags='ledger test_ledger_mock' ./x/gov/...
-#	@VERSION=$(VERSION) go test -mod=readonly -tags='ledger test_ledger_mock' ./x/order/...
-	@VERSION=$(VERSION) go test -mod=readonly -tags='ledger test_ledger_mock' ./x/params/...
-	@VERSION=$(VERSION) go test -mod=readonly -tags='ledger test_ledger_mock' ./x/staking/...
-	@VERSION=$(VERSION) go test -mod=readonly -tags='ledger test_ledger_mock' ./x/token/...
-	@VERSION=$(VERSION) go test -mod=readonly -tags='ledger test_ledger_mock' ./x/upgrade/...
-#	@VERSION=$(VERSION) go test -mod=readonly -tags='ledger test_ledger_mock' ./vendor/github.com/cosmos/cosmos-sdk/x/mint/...
+# test-unit:
+# 	@VERSION=$(VERSION) go test -mod=readonly -tags='ledger test_ledger_mock' ./app/...
+# 	@VERSION=$(VERSION) go test -mod=readonly -tags='ledger test_ledger_mock' ./x/backend/...
+# 	@VERSION=$(VERSION) go test -mod=readonly -tags='ledger test_ledger_mock' ./x/common/...
+# 	@VERSION=$(VERSION) go test -mod=readonly -tags='ledger test_ledger_mock' ./x/dex/...
+# 	@VERSION=$(VERSION) go test -mod=readonly -tags='ledger test_ledger_mock' ./x/distribution/...
+# 	@VERSION=$(VERSION) go test -mod=readonly -tags='ledger test_ledger_mock' ./x/genutil/...
+# 	@VERSION=$(VERSION) go test -mod=readonly -tags='ledger test_ledger_mock' ./x/gov/...
+# #	@VERSION=$(VERSION) go test -mod=readonly -tags='ledger test_ledger_mock' ./x/order/...
+# 	@VERSION=$(VERSION) go test -mod=readonly -tags='ledger test_ledger_mock' ./x/params/...
+# 	@VERSION=$(VERSION) go test -mod=readonly -tags='ledger test_ledger_mock' ./x/staking/...
+# 	@VERSION=$(VERSION) go test -mod=readonly -tags='ledger test_ledger_mock' ./x/token/...
+# 	@VERSION=$(VERSION) go test -mod=readonly -tags='ledger test_ledger_mock' ./x/upgrade/...
+# #	@VERSION=$(VERSION) go test -mod=readonly -tags='ledger test_ledger_mock' ./vendor/github.com/cosmos/cosmos-sdk/x/mint/...
 
 get_vendor_deps:
 	@echo "--> Generating vendor directory via dep ensure"
@@ -95,32 +96,32 @@ go.sum: go.mod
 	@go mod tidy
 
 cli:
-	go install -v $(BUILD_FLAGS) -tags "$(BUILD_TAGS)" ./cmd/okchaincli
+	go install -v $(BUILD_FLAGS) -tags "$(BUILD_TAGS)" ./cmd/onlifecli
 
 server:
-	go install -v $(BUILD_FLAGS) -tags "$(BUILD_TAGS)" ./cmd/okchaind
+	go install -v $(BUILD_FLAGS) -tags "$(BUILD_TAGS)" ./cmd/onlifed
 
 format:
 	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/lcd/statik/statik.go" | xargs gofmt -w -s
 
 build:
 ifeq ($(OS),Windows_NT)
-	go build $(BUILD_FLAGS) -o build/okchaind.exe ./cmd/okchaind
-	go build $(BUILD_FLAGS) -o build/okchaincli.exe ./cmd/okchaincli
+	go build $(BUILD_FLAGS) -o build/onlifed.exe ./cmd/onlifed
+	go build $(BUILD_FLAGS) -o build/onlifecli.exe ./cmd/onlifecli
 else
-	go build $(BUILD_FLAGS) -o build/okchaind ./cmd/okchaind
-	go build $(BUILD_FLAGS) -o build/okchaincli ./cmd/okchaincli
+	go build $(BUILD_FLAGS) -o build/onlifed ./cmd/onlifed
+	go build $(BUILD_FLAGS) -o build/onlifecli ./cmd/onlifecli
 endif
 
 build-linux:
 	LEDGER_ENABLED=false GOOS=linux GOARCH=amd64 $(MAKE) build
 
-build-docker-okchainnode:
+build-docker-onlifenode:
 	$(MAKE) -C networks/local
 
 # Run a 4-node testnet locally
 localnet-start: build-linux localnet-stop
-	@if ! [ -f build/node0/okchaind/config/genesis.json ]; then docker run --rm -v $(CURDIR)/build:/okchaind:Z okchain/node testnet --v 4 -o . --starting-ip-address 192.168.10.2 ; fi
+	@if ! [ -f build/node0/onlifed/config/genesis.json ]; then docker run --rm -v $(CURDIR)/build:/onlifed:Z okchain/node testnet --v 4 -o . --starting-ip-address 192.168.10.2 ; fi
 	docker-compose up -d
 
 # Stop testnet

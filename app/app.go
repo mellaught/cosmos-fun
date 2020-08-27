@@ -199,8 +199,6 @@ func NewNameServiceApp(
 			app.slashingKeeper.Hooks()),
 	)
 
-	// The NameserviceKeeper is the Keeper from the module for this tutorial
-	// It handles interactions with the namestore
 	app.nsKeeper = nameservice.NewKeeper(
 		app.cdc,
 		keys[nameservice.StoreKey],

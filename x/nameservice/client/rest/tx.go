@@ -18,12 +18,6 @@ type buyNameReq struct {
 	Buyer   string       `json:"buyer"`
 }
 
-type deleteNameReq struct {
-	BaseReq rest.BaseReq `json:"base_req"`
-	Name    string       `json:"name"`
-	Owner   string       `json:"owner"`
-}
-
 func buyNameHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req buyNameReq
@@ -98,6 +92,12 @@ func setNameHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		utils.WriteGenerateStdTxResponse(w, cliCtx, baseReq, []sdk.Msg{msg})
 	}
+}
+
+type deleteNameReq struct {
+	BaseReq rest.BaseReq `json:"base_req"`
+	Name    string       `json:"name"`
+	Owner   string       `json:"owner"`
 }
 
 func deleteNameHandler(cliCtx context.CLIContext) http.HandlerFunc {

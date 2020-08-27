@@ -1,61 +1,97 @@
 version: '3'
 
 services:
-  okchaindnode0:
-    container_name: okchaindnode0
-    image: "okchain/node"
+  onlifenode0:
+    container_name: onlifenode0
+    image: "eon/node"
     ports:
       - "26656-26657:26656-26657"
     environment:
       - ID=0
-      - LOG=${LOG:-okchaind.log}
+      - TYPE=onlife
+      - LOG=${LOG:-onlifed.log}
     volumes:
-      - ./build:/okchaind:Z
+      - ./build:/onlifed:Z
     networks:
       localnet:
         ipv4_address: 192.168.10.2
 
-  okchaindnode1:
-    container_name: okchaindnode1
-    image: "okchain/node"
+  onlifenode1:
+    container_name: onlifenode1
+    image: "eon/node"
     ports:
       - "26659-26660:26656-26657"
     environment:
       - ID=1
-      - LOG=${LOG:-okchaind.log}
+      - TYPE=onlife
+      - LOG=${LOG:-onlifed.log}
     volumes:
-      - ./build:/okchaind:Z
+      - ./build:/onlifed:Z
     networks:
       localnet:
         ipv4_address: 192.168.10.3
 
-  okchaindnode2:
-    container_name: okchaindnode2
-    image: "okchain/node"
+  onlifenode2:
+    container_name: onlifenode2
+    image: "onlife/node"
     environment:
       - ID=2
-      - LOG=${LOG:-okchaind.log}
+      - TYPE=onlife
+      - LOG=${LOG:-onlifed.log}
     ports:
       - "26661-26662:26656-26657"
     volumes:
-      - ./build:/okchaind:Z
+      - ./build:/onlifed:Z
     networks:
       localnet:
         ipv4_address: 192.168.10.4
 
-  okchaindnode3:
-    container_name: okchaindnode3
-    image: "okchain/node"
+  onlifenode3:
+    container_name: onlifenode3
+    image: "eon/node"
     environment:
       - ID=3
-      - LOG=${LOG:-okchaind.log}
+      - TYPE=onlife
+      - LOG=${LOG:-onlifed.log}
     ports:
       - "26663-26664:26656-26657"
     volumes:
-      - ./build:/okchaind:Z
+      - ./build:/onlifed:Z
     networks:
       localnet:
         ipv4_address: 192.168.10.5
+
+  
+  validatornode0:
+    container_name: validatornode0
+    image: "eon/node"
+    environment:
+      - ID=0
+      - TYPE=validator
+      - LOG=${LOG:-onlifed.log}
+    ports:
+      - "26665-26666:26656-26657"
+    volumes:
+      - ./build:/onlifed:Z
+    networks:
+      localnet:
+        ipv4_address: 192.168.10.6
+
+
+  validatornode1:
+    container_name: validatornode1
+    image: "eon/node"
+    environment:
+      - ID=1
+      - TYPE=validator
+      - LOG=${LOG:-onlifed.log}
+    ports:
+      - "26667-26668:26656-26657"
+    volumes:
+      - ./build:/onlifed:Z
+    networks:
+      localnet:
+        ipv4_address: 192.168.10.7
 
 networks:
   localnet:
