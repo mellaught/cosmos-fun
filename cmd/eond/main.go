@@ -38,7 +38,7 @@ func main() {
 
 	rootCmd := &cobra.Command{
 		Use:               "eond",
-		Short:             "onlife App Daemon (server)",
+		Short:             "Onlife Enterprise Network Daemon (server)",
 		PersistentPreRunE: server.PersistentPreRunEFn(ctx),
 	}
 	// CLI commands to initialize the chain
@@ -63,8 +63,7 @@ func main() {
 
 	// prepare and add flags
 	executor := cli.PrepareBaseCmd(rootCmd, "EON", app.DefaultNodeHome)
-	err := executor.Execute()
-	if err != nil {
+	if err := executor.Execute(); err != nil {
 		panic(err)
 	}
 }

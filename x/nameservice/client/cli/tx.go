@@ -16,21 +16,21 @@ import (
 )
 
 func GetTxCmd(storeKey string, cdc *codec.Codec) *cobra.Command {
-	nameserviceTxCmd := &cobra.Command{
+	eonTxCmd := &cobra.Command{
 		Use:                        types.ModuleName,
-		Short:                      "Nameservice transaction subcommands",
+		Short:                      "EON transaction subcommands",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
 
-	nameserviceTxCmd.AddCommand(flags.PostCommands(
+	eonTxCmd.AddCommand(flags.PostCommands(
 		GetCmdBuyName(cdc),
 		GetCmdSetName(cdc),
 		GetCmdDeleteName(cdc),
 	)...)
 
-	return nameserviceTxCmd
+	return eonTxCmd
 }
 
 // GetCmdBuyName is the CLI command for sending a BuyName transaction
