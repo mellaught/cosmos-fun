@@ -32,13 +32,10 @@ build_tags := $(strip $(build_tags))
 
 
 ldflags = -X $(bucket)/cosmos/cosmos-sdk/version.Version=$(VERSION) \
-	-X $(bucket)/cosmos/cosmos-sdk/version.Name=$(Name) \
+	-X $(bucket)/cosmos/cosmos-sdk/version.Name=$(NAME) \
   -X $(bucket)/cosmos/cosmos-sdk/version.ServerName=$(SERVER) \
   -X $(bucket)/cosmos/cosmos-sdk/version.ClientName=$(CLIENT) \
   -X $(bucket)/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
-  -X $(bucket)/cosmos/cosmos-sdk/version.CosmosSDK=$(CosmosSDK) \
-  -X $(bucket)/cosmos/cosmos-sdk/version.Tendermint=$(TENDERMINT) \
-  -X $(bucket)/cosmos/cosmos-sdk/version.BuildTags=$(build_tags) \
   -X $(bucket)/tendermint/tendermint/types.startBlockHeightStr=$(GenesisHeight) \
 
 
@@ -53,12 +50,12 @@ all: install
 install: eon
 
 eon:
-	go install -v $(BUILD_FLAGS) -tags "$(BUILD_TAGS)" ./cmd/onlifed
-	go install -v $(BUILD_FLAGS) -tags "$(BUILD_TAGS)" ./cmd/onlifecli
+	go install -v $(BUILD_FLAGS) -tags "$(BUILD_TAGS)" ../cmd/onlifed
+	go install -v $(BUILD_FLAGS) -tags "$(BUILD_TAGS)" ../cmd/onlifecli
 
 testnet:
-	go install -v $(BUILD_TESTNET_FLAGS) -tags "$(BUILD_TAGS)" ./cmd/onlifed
-	go install -v $(BUILD_TESTNET_FLAGS) -tags "$(BUILD_TAGS)" ./cmd/onlifecli
+	go install -v $(BUILD_TESTNET_FLAGS) -tags "$(BUILD_TAGS)" ../cmd/onlifed
+	go install -v $(BUILD_TESTNET_FLAGS) -tags "$(BUILD_TAGS)" ../cmd/onlifecli
 
 # test-unit:
 # 	@VERSION=$(VERSION) go test -mod=readonly -tags='ledger test_ledger_mock' ./app/...
@@ -117,7 +114,7 @@ build-linux:
 	LEDGER_ENABLED=false GOOS=linux GOARCH=amd64 $(MAKE) build
 
 build-docker-onlifenode:
-	$(MAKE) -C networks/local
+	$(MAKE) -C ../networks/local
 
 # Run a 4-node testnet locally
 localnet-start: build-linux localnet-stop

@@ -9,6 +9,7 @@ require (
 	github.com/cpuguy83/go-md2man v1.0.10 // indirect
 	github.com/etcd-io/bbolt v1.3.3 // indirect
 	github.com/golang/mock v1.4.4 // indirect
+	github.com/gorilla/mux v1.7.4
 	github.com/onsi/ginkgo v1.14.0 // indirect
 	github.com/spf13/afero v1.3.4 // indirect
 	github.com/spf13/cobra v1.0.0
