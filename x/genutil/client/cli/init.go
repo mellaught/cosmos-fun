@@ -6,14 +6,16 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	cfg "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/cli"
-	"github.com/tendermint/tendermint/libs/common"
+	tmos "github.com/tendermint/tendermint/libs/os"
+	tmrand "github.com/tendermint/tendermint/libs/rand"
 	"github.com/tendermint/tendermint/types"
 
-	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/server"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -68,24 +70,30 @@ func InitCmd(ctx *server.Context, cdc *codec.Codec, mbm module.BasicManager,
 		RunE: func(_ *cobra.Command, args []string) error {
 			config := ctx.Config
 			config.SetRoot(viper.GetString(cli.HomeFlag))
-			chainID := viper.GetString(client.FlagChainID)
+
+			chainID := viper.GetString(flags.FlagChainID)
 			if chainID == "" {
-				chainID = fmt.Sprintf("test-chain-%v", common.RandStr(6))
+				chainID = fmt.Sprintf("test-chain-%v", tmrand.Str(6))
 			}
+
+			fmt.Println("Debug chainID: ", chainID)
 
 			nodeID, _, err := genutil.InitializeNodeValidatorFiles(config)
 			if err != nil {
 				return err
 			}
 
+			fmt.Println("Debug Config: ", config)
+
 			config.Moniker = args[0]
+
 			genFile := config.GenesisFile()
-			if !viper.GetBool(flagOverwrite) && common.FileExists(genFile) {
+			if !viper.GetBool(flagOverwrite) && tmos.FileExists(genFile) {
 				return fmt.Errorf("genesis.json file already exists: %v", genFile)
 			}
 			appState, err := codec.MarshalJSONIndent(cdc, mbm.DefaultGenesis())
 			if err != nil {
-				return err
+				return errors.Wrap(err, "Failed to marshall default genesis state")
 			}
 
 			genDoc := &types.GenesisDoc{}
@@ -96,15 +104,19 @@ func InitCmd(ctx *server.Context, cdc *codec.Codec, mbm module.BasicManager,
 			} else {
 				genDoc, err = types.GenesisDocFromFile(genFile)
 				if err != nil {
-					return err
+					return errors.Wrap(err, "Failed to read genesis doc from file")
 				}
 			}
 
-			genDoc.ChainID, genDoc.Validators, genDoc.AppState = chainID, nil, appState
+			genDoc.ChainID = chainID
+			genDoc.Validators = nil
+			genDoc.AppState = appState
 			if err = genutil.ExportGenesisFile(genDoc, genFile); err != nil {
-				return err
+				return errors.Wrap(err, "Failed to export gensis file")
 			}
+
 			toPrint := newPrintInfo(config.Moniker, chainID, nodeID, "", appState)
+
 			cfg.WriteConfigFile(filepath.Join(config.RootDir, "config", "config.toml"), config)
 			return displayInfo(cdc, toPrint)
 		},
@@ -112,7 +124,7 @@ func InitCmd(ctx *server.Context, cdc *codec.Codec, mbm module.BasicManager,
 
 	cmd.Flags().String(cli.HomeFlag, defaultNodeHome, "node's home directory")
 	cmd.Flags().BoolP(flagOverwrite, "o", false, "overwrite the genesis.json file")
-	cmd.Flags().String(client.FlagChainID, "", "genesis file chain-id, if left blank will be randomly created")
+	cmd.Flags().String(flags.FlagChainID, "", "genesis file chain-id, if left blank will be randomly created")
 
 	return cmd
 }

@@ -10,9 +10,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/server"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
-	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
+	genutilcli "github.com/mellaught/cosmos-fun/x/genutil/client/cli"
 	"github.com/cosmos/cosmos-sdk/x/staking"
-
 	app "github.com/mellaught/cosmos-fun/app"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -54,6 +53,9 @@ func main() {
 	rootCmd.AddCommand(genutilcli.ValidateGenesisCmd(ctx, cdc, app.ModuleBasics))
 
 	// AddGenesisAccountCmd allows users to add accounts to the genesis file
+	rootCmd.AddCommand(AddGenesisAccountCmd(ctx, cdc, app.DefaultNodeHome, app.DefaultCLIHome))
+
+	// AddGenesisAccountCmd allows users to add accounts to the genesis file
 	// rootCmd.AddCommand(AddGenesisAccountCmd(ctx, cdc, app.DefaultNodeHome, app.DefaultCLIHome))
 	rootCmd.AddCommand(flags.NewCompletionCmd(rootCmd, true))
 	rootCmd.AddCommand(testnetCmd(ctx, cdc, app.ModuleBasics, auth.GenesisAccountIterator{}))
@@ -63,7 +65,8 @@ func main() {
 
 	// prepare and add flags
 	executor := cli.PrepareBaseCmd(rootCmd, "EON", app.DefaultNodeHome)
-	if err := executor.Execute(); err != nil {
+	err := executor.Execute()
+	if err != nil {
 		panic(err)
 	}
 }

@@ -33,7 +33,7 @@ services:
 
   onlifenode2:
     container_name: onlifenode2
-    image: "onlife/node"
+    image: "eon/node"
     environment:
       - ID=2
       - TYPE=onlife

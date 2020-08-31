@@ -12,15 +12,15 @@ import (
 	"sort"
 	"strings"
 
-	stakingtypes "github.com/mellaught/cosmos-fun/x/staking/types"
+	cfg "github.com/tendermint/tendermint/config"
+	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authexported "github.com/cosmos/cosmos-sdk/x/auth/exported"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/genutil/types"
-	cfg "github.com/tendermint/tendermint/config"
-	tmtypes "github.com/tendermint/tendermint/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 // GenAppStateFromConfig gets the genesis app state from the config
@@ -95,9 +95,6 @@ func CollectStdTxs(cdc *codec.Codec, moniker, genTxsDir string,
 	var addressesIPs []string
 
 	for _, fo := range fos {
-		if fo == nil {
-			continue
-		}
 		filename := filepath.Join(genTxsDir, fo.Name())
 		if !fo.IsDir() && (filepath.Ext(filename) != ".json") {
 			continue
@@ -148,10 +145,10 @@ func CollectStdTxs(cdc *codec.Codec, moniker, genTxsDir string,
 				"account %v not in genesis.json: %+v", valAddr, addrMap)
 		}
 
-		if delAcc.GetCoins().AmountOf(msg.MinSelfDelegation.Denom).LT(msg.MinSelfDelegation.Amount) {
+		if delAcc.GetCoins().AmountOf(msg.Value.Denom).LT(msg.Value.Amount) {
 			return appGenTxs, persistentPeers, fmt.Errorf(
 				"insufficient fund for delegation %v: %v < %v",
-				delAcc.GetAddress(), delAcc.GetCoins().AmountOf(msg.MinSelfDelegation.Denom), msg.MinSelfDelegation.Amount,
+				delAcc.GetAddress(), delAcc.GetCoins().AmountOf(msg.Value.Denom), msg.Value.Amount,
 			)
 		}
 

@@ -1,18 +1,21 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net"
 	"os"
 	"path/filepath"
 	"time"
 
-	flags "github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/keys"
+	clientkeys "github.com/cosmos/cosmos-sdk/client/keys"
+
+	flags "github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/codec"
-	keyring "github.com/cosmos/cosmos-sdk/crypto/keys"
 	"github.com/cosmos/cosmos-sdk/server"
 	srvconfig "github.com/cosmos/cosmos-sdk/server/config"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -27,6 +30,7 @@ import (
 	tmconfig "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/crypto"
 	cmn "github.com/tendermint/tendermint/libs/os"
+	"github.com/tendermint/tendermint/libs/rand"
 	"github.com/tendermint/tendermint/types"
 )
 
@@ -56,7 +60,7 @@ necessary files (private validator, genesis, config, etc.).
 Note, strict routability for addresses is turned off in the config file.
 
 Example:
-	eond testnet --v 4 --output-dir ./output --starting-ip-address 192.168.10.2 -l
+	eond testnet --v 5 --output-dir ./output --starting-ip-address 192.168.10.2 -l
 	`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			config := ctx.Config
@@ -76,7 +80,7 @@ Example:
 		},
 	}
 
-	cmd.Flags().Int(flagNumValidators, 4,
+	cmd.Flags().Int(flagNumValidators, 5,
 		"Number of validators to initialize the testnet with")
 	cmd.Flags().StringP(flagOutputDir, "o", "./mytestnet",
 		"Directory to store initialization data for the testnet")
@@ -98,13 +102,17 @@ Example:
 	return cmd
 }
 
-const nodeDirPerm = 0755
+const nodeDirPerm = 0700
 
 // Initialize the testnet
 func InitTestnet(cmd *cobra.Command, config *tmconfig.Config, cdc *codec.Codec,
 	mbm module.BasicManager, genAccIterator typessdk.GenesisAccountsIterator,
 	outputDir, chainID, minGasPrices, nodeDirPrefix, nodeDaemonHome,
 	nodeCLIHome, startingIPAddress string, numValidators int, isLocal bool) error {
+
+	if chainID == "" {
+		chainID = "chain-" + rand.NewRand().Str(6)
+	}
 
 	monikers := make([]string, numValidators)
 	nodeIDs := make([]string, numValidators)
@@ -118,6 +126,7 @@ func InitTestnet(cmd *cobra.Command, config *tmconfig.Config, cdc *codec.Codec,
 		genFiles []string
 	)
 
+	inBuf := bufio.NewReader(cmd.InOrStdin())
 	// generate private keys, node IDs, and initial transactions
 	for i := 0; i < numValidators; i++ {
 		nodeDirName := fmt.Sprintf("%s%d", nodeDirPrefix, i)
@@ -141,10 +150,7 @@ func InitTestnet(cmd *cobra.Command, config *tmconfig.Config, cdc *codec.Codec,
 		monikers = append(monikers, nodeDirName)
 		config.Moniker = nodeDirName
 
-		ip, err := getIP(0, startingIPAddress)
-		if !isLocal {
-			ip, err = getIP(i, startingIPAddress)
-		}
+		ip, err := getIP(i, startingIPAddress)
 		if err != nil {
 			_ = os.RemoveAll(outputDir)
 			return err
@@ -156,27 +162,24 @@ func InitTestnet(cmd *cobra.Command, config *tmconfig.Config, cdc *codec.Codec,
 			return err
 		}
 
-		baseport := viper.GetInt(flagBaseport)
-		port := baseport + i*100
-		if !isLocal {
-			port = baseport
-		}
-		memo := fmt.Sprintf("%s@%s:%d", nodeIDs[i], ip, port) //okdex
+		memo := fmt.Sprintf("%s@%s:26656", nodeIDs[i], ip)
 		genFiles = append(genFiles, config.GenesisFile())
 
-		keyPass := "12345678"
-		kb := keyring.New("", clientDir, nil)
-		addr, secret, err := server.GenerateSaveCoinKey(kb, nodeDirName, keyPass, true)
+		kb, err := keys.NewKeyBaseFromDir(clientDir)
+		if err != nil {
+			return err
+		}
+		if err != nil {
+			return err
+		}
+
+		keyPass := clientkeys.DefaultKeyPass
+		fmt.Println(kb, keyPass)
+		addr, secret, err := server.GenerateSaveCoinKey(kb, nodeDirName, keyPass, false)
 		if err != nil {
 			_ = os.RemoveAll(outputDir)
 			return err
 		}
-
-		fmt.Printf("clientDir: %s\n", clientDir)
-		fmt.Printf("nodeDirName: %s\n", nodeDirName)
-		fmt.Printf("addr: %s\n", addr)
-		fmt.Printf("secret: %s\n", secret)
-		fmt.Printf("-------------------\n")
 
 		info := map[string]string{"secret": secret}
 
@@ -190,34 +193,30 @@ func InitTestnet(cmd *cobra.Command, config *tmconfig.Config, cdc *codec.Codec,
 			return err
 		}
 
-		coins, err := sdk.ParseCoins("9000000" + sdk.DefaultBondDenom)
-		if err != nil {
-			return err
-		}
+		// accTokens := sdk.TokensFromConsensusPower(1000)
+		// accStakingTokens := sdk.TokensFromConsensusPower(500)
+		// coins := sdk.Coins{
+		// 	sdk.NewCoin(fmt.Sprintf("%stoken", nodeDirName), accTokens),
+		// 	sdk.NewCoin(sdk.DefaultBondDenom, accStakingTokens),
+		// }
 
-		accs = append(accs, genaccounts.GenesisAccount{
-			Address: addr,
-			Coins:   coins,
-		})
+		//genBalances = append(genBalances, bank.Balance{Address: addr, Coins: coins.Sort()})
+		// genAccounts = append(genAccounts, auth.NewBaseAccount(addr, nil, 0, 0))
 
-		minSelfDelegation := sdk.MustNewDecFromStr("0.001")
+		valTokens := sdk.TokensFromConsensusPower(100)
 		msg := staking.NewMsgCreateValidator(
 			sdk.ValAddress(addr),
 			valPubKeys[i],
-			sdk.NewCoin(sdk.DefaultBondDenom, minSelfDelegation.RoundInt()),
+			sdk.NewCoin(sdk.DefaultBondDenom, valTokens),
 			staking.NewDescription(nodeDirName, "", "", "", ""),
-			staking.NewCommissionRates(minSelfDelegation, minSelfDelegation, minSelfDelegation),
-			minSelfDelegation.RoundInt(),
+			staking.NewCommissionRates(sdk.OneDec(), sdk.OneDec(), sdk.OneDec()),
+			sdk.OneInt(),
 		)
-		kbs, err := keys.NewKeyBaseFromDir(clientDir)
-		if err != nil {
-			return err
-		}
-		tx := auth.NewStdTx([]sdk.Msg{msg}, auth.StdFee{}, []auth.StdSignature{}, memo)
-		var input io.Reader
-		txBldr := auth.NewTxBuilderFromCLI(input).WithChainID(chainID).WithMemo(memo).WithKeybase(kbs)
 
-		signedTx, err := txBldr.SignStdTx(nodeDirName, "12345678", tx, false)
+		tx := auth.NewStdTx([]sdk.Msg{msg}, auth.StdFee{}, []auth.StdSignature{}, memo)
+		txBldr := auth.NewTxBuilderFromCLI(inBuf).WithChainID(chainID).WithMemo(memo).WithKeybase(kb)
+
+		signedTx, err := txBldr.SignStdTx(nodeDirName, clientkeys.DefaultKeyPass, tx, false)
 		if err != nil {
 			_ = os.RemoveAll(outputDir)
 			return err
@@ -235,24 +234,35 @@ func InitTestnet(cmd *cobra.Command, config *tmconfig.Config, cdc *codec.Codec,
 			return err
 		}
 
-		onlifeConfigFilePath := filepath.Join(nodeDir, "config/eond.toml")
-		srvconfig.WriteConfigFile(onlifeConfigFilePath, onlifeConfig)
+		// TODO: Rename config file to server.toml as it's not particular to Gaia
+		// (REF: https://github.com/cosmos/cosmos-sdk/issues/4125).
+		gaiaConfigFilePath := filepath.Join(nodeDir, "config/gaiad.toml")
+		srvconfig.WriteConfigFile(gaiaConfigFilePath, onlifeConfig)
 	}
 
 	if err := initGenFiles(cdc, mbm, chainID, accs, genFiles, numValidators); err != nil {
 		return err
 	}
 
-	err := collectGenFiles(
+	if err := collectGenFiles(
 		cdc, config, chainID, monikers, nodeIDs, valPubKeys, numValidators,
 		outputDir, nodeDirPrefix, nodeDaemonHome, genAccIterator,
-	)
-	if err != nil {
+	); err != nil {
 		return err
 	}
 
 	cmd.PrintErrf("Successfully initialized %d node directories\n", numValidators)
 	return nil
+}
+
+func readUnsignedGenTxFile(cdc *codec.Codec, r io.Reader) (auth.StdTx, error) {
+	var stdTx auth.StdTx
+	bytes, err := ioutil.ReadAll(r)
+	if err != nil {
+		return stdTx, err
+	}
+	err = cdc.UnmarshalJSON(bytes, &stdTx)
+	return stdTx, err
 }
 
 func initGenFiles(cdc *codec.Codec, mbm module.BasicManager, chainID string,

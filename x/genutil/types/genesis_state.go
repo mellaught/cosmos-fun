@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	stakingtypes "github.com/mellaught/cosmos-fun/x/staking/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )

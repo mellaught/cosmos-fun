@@ -4,23 +4,24 @@ import (
 	"encoding/json"
 	"path/filepath"
 
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/tendermint/tendermint/libs/cli"
 	tmtypes "github.com/tendermint/tendermint/types"
 
-	"github.com/mellaught/cosmos-fun/x/genutil"
-
-	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/server"
+	"github.com/cosmos/cosmos-sdk/x/genutil"
+	"github.com/cosmos/cosmos-sdk/x/genutil/types"
 )
 
 const flagGenTxDir = "gentx-dir"
 
-// CollectGenTxsCmd returns the cobra command to collect genesis transactions
+// CollectGenTxsCmd - return the cobra command to collect genesis transactions
 func CollectGenTxsCmd(ctx *server.Context, cdc *codec.Codec,
-	genAccIterator genutil.GenesisAccountsIterator, defaultNodeHome string) *cobra.Command {
+	genAccIterator types.GenesisAccountsIterator, defaultNodeHome string) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "collect-gentxs",
@@ -28,15 +29,15 @@ func CollectGenTxsCmd(ctx *server.Context, cdc *codec.Codec,
 		RunE: func(_ *cobra.Command, _ []string) error {
 			config := ctx.Config
 			config.SetRoot(viper.GetString(cli.HomeFlag))
-			name := viper.GetString(client.FlagName)
+			name := viper.GetString(flags.FlagName)
 			nodeID, valPubKey, err := genutil.InitializeNodeValidatorFiles(config)
 			if err != nil {
-				return err
+				return errors.Wrap(err, "failed to initialize node validator files")
 			}
 
 			genDoc, err := tmtypes.GenesisDocFromFile(config.GenesisFile())
 			if err != nil {
-				return err
+				return errors.Wrap(err, "failed to read genesis doc from file")
 			}
 
 			genTxsDir := viper.GetString(flagGenTxDir)
@@ -49,7 +50,7 @@ func CollectGenTxsCmd(ctx *server.Context, cdc *codec.Codec,
 
 			appMessage, err := genutil.GenAppStateFromConfig(cdc, config, initCfg, *genDoc, genAccIterator)
 			if err != nil {
-				return err
+				return errors.Wrap(err, "failed to get genesis app state from config")
 			}
 
 			toPrint.AppMessage = appMessage

@@ -3,15 +3,15 @@
 ##
 ## Input parameters
 ##
-BINARY=/okchaind/${BINARY:-okchaind}
+BINARY=/eond/${BINARY:-eond}
 ID=${ID:-0}
-LOG=${LOG:-okchaind.log}
+LOG=${LOG:-onlife.log}
 
 ##
 ## Assert linux binary
 ##
 if ! [ -f "${BINARY}" ]; then
-	echo "The binary $(basename "${BINARY}") cannot be found. Please add the binary to the shared folder. Please use the BINARY environment variable if the name of the binary is not 'okchaind' E.g.: -e BINARY=okchaind_my_test_version"
+	echo "The binary $(basename "${BINARY}") cannot be found. Please add the binary to the shared folder. Please use the BINARY environment variable if the name of the binary is not 'eond' E.g.: -e BINARY=eond_my_test_version"
 	exit 1
 fi
 BINARY_CHECK="$(file "$BINARY" | grep 'ELF 64-bit LSB executable, x86-64')"
@@ -23,11 +23,11 @@ fi
 ##
 ## Run binary with all parameters
 ##
-export OKCHAINDHOME="/okchaind/node${ID}/okchaind"
+export EONHOME="/eond/node${ID}/eond"
 
-if [ -d "$(dirname "${OKCHAINDHOME}"/"${LOG}")" ]; then
-  "${BINARY}" --home "${OKCHAINDHOME}" "$@" | tee "${OKCHAINDHOME}/${LOG}"
+if [ -d "$(dirname "${EONHOME}"/"${LOG}")" ]; then
+  "${BINARY}" --home "${EONHOME}" "$@" | tee "${EONHOME}/${LOG}"
 else
-  "${BINARY}" --home "${OKCHAINDHOME}" "$@"
+  "${BINARY}" --home "${EONHOME}" "$@"
 fi
 
